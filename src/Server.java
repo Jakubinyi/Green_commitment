@@ -59,7 +59,7 @@ public class Server {
           String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
 
           JFreeChart lineChartObject = ChartFactory.createLineChart(
-                  date,"Hour","W/h",
+                  " Daily Energy Usage (" + date + ")","[hour]","[Wh]",
                   dataset, PlotOrientation.VERTICAL,
                   true,true,false);
 
