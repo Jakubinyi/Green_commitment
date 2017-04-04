@@ -4,11 +4,15 @@ import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -17,40 +21,44 @@ import java.net.Socket;
  */
 public class Client {
 
-    public void run() throws Exception {
-        Document document = createXML();
+    public void run() {
+        try {
+            Document document = createXML();
 
-        Socket socket = new Socket("localhost", 6789);
-        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-        out.writeObject(document);
-        System.out.println("Send document!");
-        out.flush();
-        out.close();
-        socket.close();
+            Socket socket = new Socket("localhost", 6789);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(document);
+            System.out.println("Send document!");
+            out.flush();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Document createXML() {
-        Document document = null;
         Integer valueX = 1;
         Integer valueY = 2;
+        Document document = null;
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.newDocument();
+            document = dBuilder.newDocument();
 
-            Element rootElement = doc.createElement("measure");
-            doc.appendChild(rootElement);
+            Element rootElement = document.createElement("measure");
+            document.appendChild(rootElement);
 
             //generate datas
-            for(int i = 1; i <= 31; i++){
-                Element rate = doc.createElement("rate");
-                Attr y = doc.createAttribute("y");
-                valueY = (int) (Math.random()*100);
+            for(int i = 1; i <= 24; i++){
+                Element rate = document.createElement("rate");
+                Attr y = document.createAttribute("y");
+                valueY = (int) (Math.random()*1000);
                 y.setValue(valueY.toString());
                 rate.setAttributeNode(y);
 
-                Attr x = doc.createAttribute("x");
+                Attr x = document.createAttribute("x");
                 valueX = i;
                 x.setValue(valueX.toString());
                 rate.setAttributeNode(x);
@@ -59,22 +67,23 @@ public class Client {
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
+            DOMSource source = new DOMSource(document);
             StreamResult result = new StreamResult(new File("src/sensordata.xml"));
             transformer.transform(source, result);
+            return document;
 
-        }catch (Exception e) {
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
             e.printStackTrace();
         }
         return document;
     }
 
     public static void main(String[] args) {
-        try {
             Client client = new Client();
             client.run();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
     }
 }
