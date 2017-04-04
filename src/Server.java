@@ -43,7 +43,7 @@ public class Server {
             }
 
             in.close();
-            creatChart(dataset);
+            createChart(dataset);
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -53,7 +53,7 @@ public class Server {
         }
       }
 
-      public void creatChart(DefaultCategoryDataset dataset) throws IOException {
+      public void createChart(DefaultCategoryDataset dataset) throws IOException {
           DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
           LocalDate localDate = LocalDate.now();
           String date = DateTimeFormatter.ofPattern("yyy/MM/dd").format(localDate);
