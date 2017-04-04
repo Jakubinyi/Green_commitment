@@ -38,8 +38,8 @@ public class Client {
     }
 
     public Document createXML() {
-        Integer valueX = 1;
-        Integer valueY = 2;
+        Integer valueX;
+        Integer valueY;
         Document document = null;
 
         try {
