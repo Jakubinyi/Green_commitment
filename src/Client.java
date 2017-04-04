@@ -1,7 +1,14 @@
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -11,31 +18,50 @@ import java.net.Socket;
 public class Client {
 
     public void run() throws Exception {
-        Document document = createXML("30", "40");
+        Document document = createXML();
+
         Socket socket = new Socket("localhost", 6789);
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         out.writeObject(document);
         System.out.println("Send document!");
+        out.flush();
+        out.close();
+        socket.close();
     }
 
-    public Document createXML(String x, String y) {
+    public Document createXML() {
         Document document = null;
+        Integer valueX = 1;
+        Integer valueY = 2;
+
         try {
-            document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            Element root = document.createElement("measurements");
-            Element measurement1 = document.createElement("measurement");
-            Element measurement2 = document.createElement("measurement");
-            Element rate1 = document.createElement("rate");
-            Element rate2 = document.createElement("rate");
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
 
-            rate2.setTextContent(x);
-            rate1.setTextContent(y);
+            Element rootElement = doc.createElement("measure");
+            doc.appendChild(rootElement);
 
-            measurement1.appendChild(rate1);
-            measurement2.appendChild(rate2);
-            root.appendChild(measurement1);
-            root.appendChild(measurement2);
-            document.appendChild(root);
+            //generate datas
+            for(int i = 1; i <= 31; i++){
+                Element rate = doc.createElement("rate");
+                Attr y = doc.createAttribute("y");
+                valueY = (int) (Math.random()*100);
+                y.setValue(valueY.toString());
+                rate.setAttributeNode(y);
+
+                Attr x = doc.createAttribute("x");
+                valueX = i;
+                x.setValue(valueX.toString());
+                rate.setAttributeNode(x);
+                rootElement.appendChild(rate);
+            }
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File("src/sensordata.xml"));
+            transformer.transform(source, result);
 
         }catch (Exception e) {
             e.printStackTrace();
